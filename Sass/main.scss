@@ -1,0 +1,28 @@
+﻿/** File Name:     main.scss
+ *  By:            Darian Benam (GitHub: https://github.com/BeardedFish/)
+ *  Date:          Tuesday, August 30, 2022 */
+
+html {
+    min-width: 248px;
+}
+
+h1 {
+    outline: none;
+}
+
+.index-page-hero-header {
+    background-image: url("/assets/images/network-switch-sm.webp");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+
+    @media only screen and (min-width: 768px) {
+        background-image: url("/assets/images/network-switch-md.webp");
+    }
+
+    @media only screen and (min-width: 1366px) {
+        background-image: url("/assets/images/network-switch-lg.webp");
+    }
+}
+
+@import "./bootstrap-custom";

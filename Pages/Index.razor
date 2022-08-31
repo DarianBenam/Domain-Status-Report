@@ -1,0 +1,101 @@
+﻿@page "/"
+
+@using DomainStatusReport.Services
+@inject IDomainStatusCheckerService DomainStatusCheckerService
+
+<PageTitle>Domain Status Report</PageTitle>
+
+<header class="index-page-hero-header">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12 text-light">
+                <h1 class="mb-3">Domain Status Report</h1>
+                <p>View the status of all domains owned and operated by Darian Benam. &#128640;</p>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="container py-5">
+    @if (_domainOnlineStatus is null)
+    {
+        <p>Fetching results...</p>
+    }
+    else
+    {
+        @if (_retrievedFromCache)
+        {
+            <div class="alert alert-warning mb-5" role="alert">
+                <h4 class="alert-heading">Notice</h4>
+                Results were retrieved from cache and may be inaccurate. The cache will expire at: @_cacheExpirationTimestamp.
+            </div>
+        }
+        <div class="table-responsive mb-1">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Domain Name</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">HTTP Status Code</th>
+                        <th scope="col">Last Pinged</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ((string domainName, DomainStatus domainStatus) in _domainOnlineStatus)
+                    {
+                        string badgeText = !domainStatus.IsUnreachable ? "Online" : "Unreachable";
+                        string badgeCssClass = badgeText == "Online" ? "bg-success" : "bg-danger";
+
+                        <tr>
+                            <td><a href="@domainName" target="_blank">@domainName.Replace("https://", "")</a></td>
+                            <td><span class="badge @badgeCssClass">@badgeText</span></td>
+                            <td>
+                                @if (domainStatus.StatusCode is not null)
+                                {
+                                    @:@Convert.ToInt32(domainStatus.StatusCode)
+                                }
+                                else
+                                {
+                                    @:N/A
+                                }
+                            </td>
+                            <td>@domainStatus.PingTimestamp</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" @onclick="FetchData">Refresh</button>
+    }
+</div>
+
+@code
+{
+    private bool _retrievedFromCache;
+    private DateTime? _cacheExpirationTimestamp;
+    private Dictionary<string, DomainStatus>? _domainOnlineStatus;
+
+    protected async Task FetchData()
+    {
+        _cacheExpirationTimestamp = null;
+        _domainOnlineStatus = null;
+        
+        StateHasChanged();
+
+        string[] domainsToCheck =
+        {
+            "https://www.darianbenam.com",
+            "https://fifteenpuzzle.darianbenam.com"
+        };
+
+        (_retrievedFromCache, _cacheExpirationTimestamp, _domainOnlineStatus) = await DomainStatusCheckerService.GetDomainRangeStatus(domainsToCheck);
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await FetchData();
+        }
+    }
+}

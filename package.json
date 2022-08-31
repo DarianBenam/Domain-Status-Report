@@ -1,0 +1,24 @@
+{
+    "name": "domain-status-report",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "sass --style compressed Sass/main.scss wwwroot/css/main.min.css",
+        "dev": "sass --watch Sass/main.scss wwwroot/css/main.min.css"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DarianBenam/Domain-Status-Report"
+    },
+    "author": "Darian Benam",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/DarianBenam/Domain-Status-Report/issues"
+    },
+    "homepage": "https://github.com/DarianBenam/Domain-Status-Report",
+    "devDependencies": {
+        "sass": "^1.54.6"
+    },
+    "dependencies": {
+        "bootstrap": "^5.2.0"
+    }
+}
