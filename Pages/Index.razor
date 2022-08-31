@@ -1,9 +1,13 @@
-﻿@page "/"
+@page "/"
 
 @using DomainStatusReport.Services
 @inject IDomainStatusCheckerService DomainStatusCheckerService
 
 <PageTitle>Domain Status Report</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="View the status of all domains owned and operated by Darian Benam.">
+</HeadContent>
 
 <header class="index-page-hero-header">
     <div class="container py-5">
