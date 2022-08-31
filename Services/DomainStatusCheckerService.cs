@@ -43,7 +43,7 @@ public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
 
                 httpClient.DefaultRequestHeaders.UserAgent.Add(new("DomainStatusReport", "1.0"));
                 httpClient.DefaultRequestHeaders.UserAgent.Add(new(".NET", Environment.Version.ToString()));
-                httpClient.DefaultRequestHeaders.UserAgent.Add(new("(+http://www.status.darianbenam.com)"));
+                httpClient.DefaultRequestHeaders.UserAgent.Add(new("(+https://www.status.darianbenam.com)"));
 
                 using HttpRequestMessage request = new(HttpMethod.Head, domain);
                 httpResponseMessage = await httpClient.SendAsync(request);
