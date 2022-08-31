@@ -5,78 +5,77 @@
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;
 
-namespace DomainStatusReport.Services
+namespace DomainStatusReport.Services;
+
+public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
 {
-    public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
+    private static readonly string DomainStatusCacheKey = "domainStatus";
+    private static DateTime? CacheExpirationTimestamp = null;
+
+    private readonly ILogger<DomainStatusCheckerService> _logger;
+    private readonly IMemoryCache _memoryCache;
+
+    public DomainStatusCheckerService(ILogger<DomainStatusCheckerService> logger, IMemoryCache memoryCache)
     {
-        private static readonly string DomainStatusCacheKey = "domainStatus";
-        private static DateTime? CacheExpirationTimestamp = null;
+        _logger = logger;
+        _memoryCache = memoryCache;
+    }
 
-        private readonly ILogger<DomainStatusCheckerService> _logger;
-        private readonly IMemoryCache _memoryCache;
+    public async Task<(bool RetrievedFromCache, DateTime? CacheExpirationTimestamp, Dictionary<string, DomainStatus> DomainStatusDictionary)> GetDomainRangeStatus(string[] domains)
+    {
+        object cache = _memoryCache.Get(DomainStatusCacheKey);
 
-        public DomainStatusCheckerService(ILogger<DomainStatusCheckerService> logger, IMemoryCache memoryCache)
+        if (cache is not null and Dictionary<string, DomainStatus>)
         {
-            _logger = logger;
-            _memoryCache = memoryCache;
+            return (true, CacheExpirationTimestamp, (Dictionary<string, DomainStatus>)cache);
         }
 
-        public async Task<(bool RetrievedFromCache, DateTime? CacheExpirationTimestamp, Dictionary<string, DomainStatus> DomainStatusDictionary)> GetDomainRangeStatus(string[] domains)
+        Dictionary<string, DomainStatus> domainOnlineStatusDictionary = new();
+
+        foreach (string domain in domains)
         {
-            object cache = _memoryCache.Get(DomainStatusCacheKey);
+            DateTime pingTimestamp = DateTime.Now;
+            HttpResponseMessage? httpResponseMessage = null;
 
-            if (cache is not null and Dictionary<string, DomainStatus>)
+            try
             {
-                return (true, CacheExpirationTimestamp, (Dictionary<string, DomainStatus>)cache);
+                using HttpClient httpClient = new();
+
+                httpClient.DefaultRequestHeaders.UserAgent.Add(new("DomainStatusReport", "1.0"));
+                httpClient.DefaultRequestHeaders.UserAgent.Add(new(".NET", Environment.Version.ToString()));
+                httpClient.DefaultRequestHeaders.UserAgent.Add(new("(+http://www.status.darianbenam.com)"));
+
+                using HttpRequestMessage request = new(HttpMethod.Head, domain);
+                httpResponseMessage = await httpClient.SendAsync(request);
             }
-
-            Dictionary<string, DomainStatus> domainOnlineStatusDictionary = new();
-
-            foreach (string domain in domains)
+            catch (HttpRequestException ex)
             {
-                DateTime pingTimestamp = DateTime.Now;
-                HttpResponseMessage? httpResponseMessage = null;
+                _logger.LogError("An exception occured in the DomainStatusCheckerService: {0}", ex.Message);
+            }
+            finally
+            {
+                HttpStatusCode? httpStatusCode = httpResponseMessage?.StatusCode;
 
-                try
+                domainOnlineStatusDictionary[domain] = new(httpStatusCode, pingTimestamp);
+
+                if (httpResponseMessage is not null)
                 {
-                    using HttpClient httpClient = new();
-
-                    httpClient.DefaultRequestHeaders.UserAgent.Add(new("DomainStatusReport", "1.0"));
-                    httpClient.DefaultRequestHeaders.UserAgent.Add(new(".NET", Environment.Version.ToString()));
-                    httpClient.DefaultRequestHeaders.UserAgent.Add(new("(+http://www.status.darianbenam.com)"));
-
-                    using HttpRequestMessage request = new(HttpMethod.Head, domain);
-                    httpResponseMessage = await httpClient.SendAsync(request);
-                }
-                catch (HttpRequestException ex)
-                {
-                    _logger.LogError("An exception occured in the DomainStatusCheckerService: {0}", ex.Message);
-                }
-                finally
-                {
-                    HttpStatusCode? httpStatusCode = httpResponseMessage?.StatusCode;
-
-                    domainOnlineStatusDictionary[domain] = new(httpStatusCode, pingTimestamp);
-
-                    if (httpResponseMessage is not null)
-                    {
-                        httpResponseMessage.Dispose();
-                    }
+                    httpResponseMessage.Dispose();
                 }
             }
-
-            CacheExpirationTimestamp = DateTime.Now.AddMinutes(10);
-
-            MemoryCacheEntryOptions memoryCacheEntryOptions = new();
-
-            if (CacheExpirationTimestamp.HasValue)
-            {
-                memoryCacheEntryOptions.SetAbsoluteExpiration(CacheExpirationTimestamp.Value);
-            }
-
-            _memoryCache.Set(DomainStatusCacheKey, domainOnlineStatusDictionary, memoryCacheEntryOptions);
-
-            return (false, CacheExpirationTimestamp, domainOnlineStatusDictionary);
         }
+
+        CacheExpirationTimestamp = DateTime.Now.AddMinutes(10);
+
+        MemoryCacheEntryOptions memoryCacheEntryOptions = new();
+
+        if (CacheExpirationTimestamp.HasValue)
+        {
+            memoryCacheEntryOptions.SetAbsoluteExpiration(CacheExpirationTimestamp.Value);
+        }
+
+        _memoryCache.Set(DomainStatusCacheKey, domainOnlineStatusDictionary, memoryCacheEntryOptions);
+
+        return (false, CacheExpirationTimestamp, domainOnlineStatusDictionary);
     }
 }
