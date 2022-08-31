@@ -1,12 +1,16 @@
 ﻿<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
     </Found>
     <NotFound>
-        <PageTitle>Not found</PageTitle>
+        <PageTitle>404 - Page Not Found</PageTitle>
         <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
+            <div class="container py-5">
+                <h1 class="pb-2">404</h1>
+                <p class="pb-4">Sorry, there's nothing at this address. &#128064;</p>
+                <a href="/" class="btn btn-primary btn-sm">Go to Homepage</a>
+            </div>
         </LayoutView>
     </NotFound>
 </Router>
