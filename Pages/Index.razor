@@ -72,12 +72,13 @@
                 </tbody>
             </table>
         </div>
-        <button type="button" class="btn btn-primary btn-sm" @onclick="FetchData">Refresh</button>
+        <button type="button" class="btn btn-primary btn-sm" disabled="@_isRefreshButtonDisabled" @onclick="FetchData">Refresh</button>
     }
 </div>
 
 @code
 {
+    private bool _isRefreshButtonDisabled;
     private bool _retrievedFromCache;
     private DateTime? _cacheExpirationTimestamp;
     private Dictionary<string, DomainStatus>? _domainOnlineStatus;
@@ -96,6 +97,8 @@
         };
 
         (_retrievedFromCache, _cacheExpirationTimestamp, _domainOnlineStatus) = await DomainStatusCheckerService.GetDomainRangeStatus(domainsToCheck);
+
+        DisableRefreshButton(10000);
         StateHasChanged();
     }
 
@@ -120,5 +123,21 @@
         }
 
         return stringBuilder.ToString();
+    }
+
+    private async void DisableRefreshButton(int milliseconds)
+    {
+        if (_isRefreshButtonDisabled)
+        {
+            return;
+        }
+
+        _isRefreshButtonDisabled = true;
+
+        await Task.Delay(milliseconds);
+
+        _isRefreshButtonDisabled = false;
+
+        StateHasChanged();
     }
 }
