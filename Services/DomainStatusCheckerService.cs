@@ -10,8 +10,8 @@ namespace DomainStatusReport.Services;
 public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
 {
     private const int CacheLifetimeMinutes = 30;
+    private const string DomainStatusCacheKey = "domainStatus";
 
-    private static readonly string DomainStatusCacheKey = "domainStatus";
     private static DateTime? CacheExpirationTimestamp = null;
 
     private readonly ILogger<DomainStatusCheckerService> _logger;
