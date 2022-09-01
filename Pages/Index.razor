@@ -1,6 +1,8 @@
 @page "/"
 
 @using DomainStatusReport.Services
+@using System.Text
+
 @inject IDomainStatusCheckerService DomainStatusCheckerService
 
 <PageTitle>Domain Status Report</PageTitle>
@@ -26,11 +28,13 @@
     }
     else
     {
-        @if (_retrievedFromCache)
+        @if (_retrievedFromCache && _cacheExpirationTimestamp is not null)
         {
+            int minutesUntilCacheExpires = (int)Math.Round(_cacheExpirationTimestamp.Value.Subtract(DateTime.Now).TotalMinutes);
+
             <div class="alert alert-warning mb-5" role="alert">
                 <h4 class="alert-heading">Notice</h4>
-                Results were retrieved from cache and may be inaccurate. The cache will expire at: @_cacheExpirationTimestamp.
+                Results were retrieved from cache and may be inaccurate. The cache will expire at: @_cacheExpirationTimestamp (@FormatMinuteString(minutesUntilCacheExpires) remaining).
             </div>
         }
         <div class="table-responsive mb-1">
@@ -82,7 +86,7 @@
     {
         _cacheExpirationTimestamp = null;
         _domainOnlineStatus = null;
-        
+
         StateHasChanged();
 
         string[] domainsToCheck =
@@ -101,5 +105,20 @@
         {
             await FetchData();
         }
+    }
+
+    private string FormatMinuteString(int minutes)
+    {
+        StringBuilder stringBuilder = new();
+
+        stringBuilder.Append(minutes);
+        stringBuilder.Append(" minute");
+
+        if (minutes != 1)
+        {
+            stringBuilder.Append('s');
+        }
+
+        return stringBuilder.ToString();
     }
 }
