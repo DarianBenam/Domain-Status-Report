@@ -1,4 +1,4 @@
-/** File Name:     DomainStatusCheckerService.cs
+﻿/** File Name:     DomainStatusCheckerService.cs
  *  By:            Darian Benam (GitHub: https://github.com/BeardedFish/)
  *  Date:          Tuesday, August 30, 2022 */
 
@@ -52,7 +52,7 @@ public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError("An exception occured in the DomainStatusCheckerService: {0}", ex.Message);
+                _logger.LogError("An exception occured in the DomainStatusCheckerService: {exceptionMessage}", ex.Message);
             }
             finally
             {
