@@ -1,4 +1,4 @@
-﻿/** File Name:     DomainStatusCheckerService.cs
+/** File Name:     DomainStatusCheckerService.cs
  *  By:            Darian Benam (GitHub: https://github.com/BeardedFish/)
  *  Date:          Tuesday, August 30, 2022 */
 
@@ -9,6 +9,8 @@ namespace DomainStatusReport.Services;
 
 public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
 {
+    private const int CacheLifetimeMinutes = 30;
+
     private static readonly string DomainStatusCacheKey = "domainStatus";
     private static DateTime? CacheExpirationTimestamp = null;
 
@@ -65,7 +67,7 @@ public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
             }
         }
 
-        CacheExpirationTimestamp = DateTime.Now.AddMinutes(10);
+        CacheExpirationTimestamp = DateTime.Now.AddMinutes(CacheLifetimeMinutes);
 
         MemoryCacheEntryOptions memoryCacheEntryOptions = new();
 
