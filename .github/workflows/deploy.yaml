@@ -31,7 +31,7 @@ jobs:
               run: dotnet build --no-restore --configuration Release
 
             - name: Publish Release Build Artifact
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v3
               with:
                 name: 'Release Build Artifact'
                 path: ./bin/Release
@@ -53,7 +53,7 @@ jobs:
             - uses: actions/checkout@v3
 
             - name: Get Release Build Artifact
-              uses: actions/download-artifact@v2
+              uses: actions/download-artifact@v3
               with:
                 name: 'Release Build Artifact'
                 path: ./bin/Release
