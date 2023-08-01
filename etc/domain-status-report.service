@@ -1,0 +1,16 @@
+[Unit]
+Description=Domain Status Report
+
+[Service]
+WorkingDirectory=/var/www/Domain-Status-Report
+ExecStart=/usr/bin/dotnet /var/www/Domain-Status-Report/bin/Release/net6.0/DomainStatusReport.dll
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=dotnet-domain-status-report
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+[Install]
+WantedBy=multi-user.target

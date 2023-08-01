@@ -1,0 +1,76 @@
+name: Deploy to DigitalOcean
+
+on:
+    push:
+        branches: [ "main" ]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                node-version: 18
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v3
+              with:
+                  dotnet-version: 6.0.x
+
+            - name: Restore Dependencies
+              run: dotnet restore
+
+            - name: Test
+              run: dotnet test --no-build --verbosity normal
+
+            - name: Build (Release)
+              run: dotnet build --no-restore --configuration Release
+
+            - name: Publish Release Build Artifact
+              uses: actions/upload-artifact@v2
+              with:
+                name: 'Release Build Artifact'
+                path: ./bin/Release
+
+    deploy:
+        runs-on: ubuntu-latest
+
+        needs: build
+
+        environment:
+            name: 'Production'
+            url: https://status.darianbenam.com
+
+        env:
+            SSH_ENDPOINT: '${{ secrets.SSH_USER }}@${{ secrets.SSH_HOSTNAME }}'
+            SERVICE_FILE_NAME: 'domain-status-report.service'
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Get Release Build Artifact
+              uses: actions/download-artifact@v2
+              with:
+                name: 'Release Build Artifact'
+                path: ./bin/Release
+
+            - name: Setup SSH
+              run: |
+                apt-get update && apt-get install -y openssh-client
+                mkdir -p ~/.ssh
+                echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+                chmod 600 ~/.ssh/id_rsa
+                ssh-keyscan -t rsa ${{ secrets.SSH_HOSTNAME }} >> ~/.ssh/known_hosts
+
+            - name: Copy Artifacts via SCP
+              run: scp -r ./bin/Release $SSH_ENDPOINT:/var/www/Domain-Status-Report/bin
+
+            - name: Copy Service File
+              run: scp -r ./etc/$SERVICE_FILE_NAME $SSH_ENDPOINT:/etc/systemd/system
+
+            - name: Restart Service
+              run: ssh $SSH_ENDPOINT 'systemctl restart ${{ env.SERVICE_FILE_NAME }}'
