@@ -1,0 +1,17 @@
+.git/
+.github/
+.vs/
+.vscode/
+bin/
+etc/
+node_modules/
+obj/
+Properties/
+Screenshots/
+wwwroot/css/
+README.md
+.editorconfig
+.dockerignore
+docker-compose.yml
+Dockerfile
+*.sln

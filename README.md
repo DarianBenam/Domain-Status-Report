@@ -8,14 +8,23 @@ A `.NET 6` [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blaz
 
 ## How to Run
 
-After cloning the repository, navigate to the directory which holds the project files and run the following commands:
+### .NET SDK
+
+Assuming the [.NET SDK](https://dotnet.microsoft.com/en-us/download/visual-studio-sdks) is installed, run the following command in the root directory of the project:
 
 ```console
-npm install
 dotnet run
 ```
 
 You can also run the project via an IDE (such as Visual Studio or Visual Studio Code).
+
+### Docker
+
+Assuming [Docker](https://www.docker.com) is installed, run the following command in the root directory of the project:
+
+```console
+docker-compose up -d
+```
 
 ## Live Demo
 
