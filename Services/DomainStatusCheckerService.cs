@@ -44,7 +44,7 @@ public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
             {
                 using HttpClient httpClient = new();
 
-                httpClient.DefaultRequestHeaders.UserAgent.Add(new("DomainStatusReport", "1.1.0"));
+                httpClient.DefaultRequestHeaders.UserAgent.Add(new("DomainStatusReport", "1.2.0"));
                 httpClient.DefaultRequestHeaders.UserAgent.Add(new(".NET", Environment.Version.ToString()));
                 httpClient.DefaultRequestHeaders.UserAgent.Add(new("(+https://www.status.darianbenam.com)"));
 

@@ -30,6 +30,7 @@ app.UseForwardedHeaders(new()
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 app.Run();
