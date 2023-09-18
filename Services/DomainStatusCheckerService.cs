@@ -1,7 +1,8 @@
-﻿/** File Name:     DomainStatusCheckerService.cs
+/** File Name:     DomainStatusCheckerService.cs
  *  By:            Darian Benam (GitHub: https://github.com/BeardedFish/)
  *  Date:          Tuesday, August 30, 2022 */
 
+using DomainStatusReport.Services.Configuration;
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;
 
@@ -23,7 +24,7 @@ public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
         _memoryCache = memoryCache;
     }
 
-    public async Task<(bool RetrievedFromCache, DateTime? CacheExpirationTimestamp, Dictionary<string, DomainStatus> DomainStatusDictionary)> GetDomainRangeStatus(string[] domains)
+    public async Task<(bool RetrievedFromCache, DateTime? CacheExpirationTimestamp, Dictionary<string, DomainStatus> DomainStatusDictionary)> GetDomainRangeStatus(DomainService[] domainServiceRange)
     {
         object cache = _memoryCache.Get(DomainStatusCacheKey);
 
@@ -34,7 +35,7 @@ public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
 
         Dictionary<string, DomainStatus> domainOnlineStatusDictionary = new();
 
-        foreach (string domain in domains)
+        foreach (DomainService service in domainServiceRange)
         {
             DateTime pingTimestamp = DateTime.Now;
             HttpResponseMessage? httpResponseMessage = null;
@@ -43,11 +44,11 @@ public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
             {
                 using HttpClient httpClient = new();
 
-                httpClient.DefaultRequestHeaders.UserAgent.Add(new("DomainStatusReport", "1.0"));
+                httpClient.DefaultRequestHeaders.UserAgent.Add(new("DomainStatusReport", "1.1.0"));
                 httpClient.DefaultRequestHeaders.UserAgent.Add(new(".NET", Environment.Version.ToString()));
                 httpClient.DefaultRequestHeaders.UserAgent.Add(new("(+https://www.status.darianbenam.com)"));
 
-                using HttpRequestMessage request = new(HttpMethod.Head, domain);
+                using HttpRequestMessage request = new(HttpMethod.Head, service.Domain);
                 httpResponseMessage = await httpClient.SendAsync(request);
             }
             catch (HttpRequestException ex)
@@ -58,7 +59,7 @@ public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
             {
                 HttpStatusCode? httpStatusCode = httpResponseMessage?.StatusCode;
 
-                domainOnlineStatusDictionary[domain] = new(httpStatusCode, pingTimestamp);
+                domainOnlineStatusDictionary[service.Domain] = new(service.ExpectedHttpResponseCode, httpStatusCode, pingTimestamp);
 
                 if (httpResponseMessage is not null)
                 {

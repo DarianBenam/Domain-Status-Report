@@ -3,11 +3,15 @@
  *  Date:          Tuesday, August 30, 2022 */
 
 using DomainStatusReport.Services;
+using DomainStatusReport.Services.Configuration;
 using Microsoft.AspNetCore.HttpOverrides;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+ApplicationConfig appConfig = new(builder.Configuration);
+
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddSingleton<IApplicationConfig>(appConfig);
 builder.Services.AddSingleton<IDomainStatusCheckerService, DomainStatusCheckerService>();
 
 WebApplication app = builder.Build();

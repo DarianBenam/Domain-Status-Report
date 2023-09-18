@@ -1,8 +1,10 @@
 @page "/"
 
 @using DomainStatusReport.Services
+@using DomainStatusReport.Services.Configuration
 @using System.Text
 
+@inject IApplicationConfig AppConfig
 @inject IDomainStatusCheckerService DomainStatusCheckerService
 
 <PageTitle>Domain Status Report</PageTitle>
@@ -90,15 +92,7 @@
 
         StateHasChanged();
 
-        string[] domainsToCheck =
-        {
-            "https://www.darianbenam.com",
-            "https://fifteenpuzzle.darianbenam.com",
-            "https://prospectivecareerdatabase.darianbenam.com",
-            "https://benam.io"
-        };
-
-        (_retrievedFromCache, _cacheExpirationTimestamp, _domainOnlineStatus) = await DomainStatusCheckerService.GetDomainRangeStatus(domainsToCheck);
+        (_retrievedFromCache, _cacheExpirationTimestamp, _domainOnlineStatus) = await DomainStatusCheckerService.GetDomainRangeStatus(AppConfig.Services);
 
         DisableRefreshButton(10000);
         StateHasChanged();
