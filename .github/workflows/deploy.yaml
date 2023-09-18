@@ -28,7 +28,7 @@ jobs:
               run: dotnet test --no-build --verbosity normal
 
             - name: Build (Release)
-              run: dotnet build --no-restore --configuration Release
+              run: dotnet publish --no-restore --configuration Release
 
             - name: Publish Release Build Artifact
               uses: actions/upload-artifact@v3
@@ -73,4 +73,7 @@ jobs:
               run: scp -r ./etc/$SERVICE_FILE_NAME $SSH_ENDPOINT:/etc/systemd/system
 
             - name: Restart Service
-              run: ssh $SSH_ENDPOINT 'systemctl restart ${{ env.SERVICE_FILE_NAME }}'
+              run: |
+                ssh $SSH_ENDPOINT 'systemctl daemon-reload'
+                ssh $SSH_ENDPOINT 'systemctl reenable ${{ env.SERVICE_FILE_NAME }}'
+                ssh $SSH_ENDPOINT 'systemctl restart ${{ env.SERVICE_FILE_NAME }}'

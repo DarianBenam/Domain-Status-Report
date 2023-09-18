@@ -27,7 +27,6 @@ app.UseForwardedHeaders(new()
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.MapControllers();

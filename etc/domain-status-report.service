@@ -2,8 +2,8 @@
 Description=Domain Status Report
 
 [Service]
-WorkingDirectory=/var/www/Domain-Status-Report
-ExecStart=/usr/bin/dotnet /var/www/Domain-Status-Report/bin/Release/net6.0/DomainStatusReport.dll
+WorkingDirectory=/var/www/Domain-Status-Report/bin/Release/net6.0/publish/
+ExecStart=/usr/bin/dotnet /var/www/Domain-Status-Report/bin/Release/net6.0/publish/DomainStatusReport.dll
 Restart=always
 RestartSec=10
 KillSignal=SIGINT
