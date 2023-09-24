@@ -9,6 +9,16 @@ using Microsoft.AspNetCore.HttpOverrides;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 ApplicationConfig appConfig = new(builder.Configuration);
 
+builder.Services.AddCors(setup =>
+{
+    setup.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("https://www.darianbenam.com")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<IApplicationConfig>(appConfig);
@@ -22,6 +32,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
 app.UseForwardedHeaders(new()
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
@@ -29,6 +40,7 @@ app.UseForwardedHeaders(new()
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors();
 app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
