@@ -13,7 +13,7 @@ builder.Services.AddCors(setup =>
 {
     setup.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("https://www.darianbenam.com")
+        policy.WithOrigins("https://benam.io", "https://www.darianbenam.com")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
