@@ -9,7 +9,7 @@
 	</ItemGroup>
   <Target Name="Install NPM Dependencies" BeforeTargets="Compile">
     <Message Text="Installing NPM dependencies" Importance="high"/>
-    <Exec Command="npm install"/>
+    <Exec Command="npm ci"/>
   </Target>
 	<Target Name="Compile SCSS" BeforeTargets="Compile">
 		<Message Text="Compiling SCSS files" Importance="high"/>
