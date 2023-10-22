@@ -1,0 +1,7 @@
+* text eol=crlf
+
+*.service text eol=lf
+
+*.ico binary
+*.png binary
+*.webp binary
