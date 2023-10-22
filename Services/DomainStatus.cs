@@ -11,7 +11,7 @@ public sealed record DomainStatus
     private HttpStatusCode? ExpectedStatusCode { get; }
 
     public HttpStatusCode? StatusCode { get; private set; }
-        
+
     public DateTime PingTimestamp { get; private set; }
 
     public bool IsUnreachable => StatusCode is null || ExpectedStatusCode != StatusCode;
