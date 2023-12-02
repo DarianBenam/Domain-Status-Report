@@ -4,7 +4,7 @@
 ![GitHub Actions deploy workflow status](https://img.shields.io/github/actions/workflow/status/DarianBenam/Domain-Status-Report/.github%2Fworkflows%2Fdeploy.yaml?label=deploy%20workflow)
 ![Live demo website](https://img.shields.io/website?down_color=red&down_message=offline&label=live%20demo%20website&up_message=online&url=https%3A%2F%2Fstatus.darianbenam.com%2F)
 
-A `.NET 6` [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) app that allows users to view the status of all domains owned and operated by Darian Benam. 🚀 This app was built using Visual Studio Community 2022.
+A `.NET 8` [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) app that allows users to view the status of all domains owned and operated by Darian Benam. 🚀 This app was built using Visual Studio Community 2022.
 
 ## How to Run
 
