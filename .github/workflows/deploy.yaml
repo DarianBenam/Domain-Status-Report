@@ -2,7 +2,7 @@ name: Deploy to DigitalOcean
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "deployment-pipeline-fix", "main" ]
 
 jobs:
   build:
