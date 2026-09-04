@@ -26,7 +26,7 @@ public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
 
     public async Task<(bool RetrievedFromCache, DateTime? CacheExpirationTimestamp, Dictionary<string, DomainStatus> DomainStatusDictionary)> GetDomainRangeStatus(DomainService[] domainServiceRange)
     {
-        object cache = _memoryCache.Get(DomainStatusCacheKey);
+        object? cache = _memoryCache.Get(DomainStatusCacheKey);
 
         if (cache is not null and Dictionary<string, DomainStatus>)
         {
@@ -37,6 +37,11 @@ public sealed class DomainStatusCheckerService : IDomainStatusCheckerService
 
         foreach (DomainService service in domainServiceRange)
         {
+            if (string.IsNullOrEmpty(service.Domain))
+            {
+                continue;
+            }
+
             DateTime pingTimestamp = DateTime.Now;
             HttpResponseMessage? httpResponseMessage = null;
 
