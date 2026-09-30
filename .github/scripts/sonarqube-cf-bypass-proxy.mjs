@@ -1,6 +1,6 @@
-import http from "http";
-import https from "https";
-import { URL } from "url";
+import http from "node:http";
+import https from "node:https";
+import { URL } from "node:url";
 
 if (!process.env.SONAR_UPSTREAM_URL) {
     console.error("SONAR_UPSTREAM_URL environment variable is required.");
