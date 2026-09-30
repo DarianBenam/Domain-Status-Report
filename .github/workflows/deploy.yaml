@@ -89,7 +89,8 @@ jobs:
             /k:"${SONAR_PROJECT_KEY}" \
             /d:sonar.host.url="${SONAR_PROXY_HOST_URL}" \
             /d:sonar.token="${SONAR_TOKEN}" \
-            /d:sonar.qualitygate.wait=true
+            /d:sonar.qualitygate.wait=true \
+            /d:sonar.coverage.exclusions="**/.github/scripts/**"
 
       - name: Build (Release)
         run: dotnet build --no-restore --configuration Release
