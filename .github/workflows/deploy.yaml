@@ -4,31 +4,88 @@ on:
   push:
     branches: [ "main" ]
 
+env:
+  SONAR_HOST_URL: https://sonarqube.benam.io
+  SONAR_PROJECT_KEY: Domain-Status-Report
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarQube scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4
+        with:
+          path: ./.sonar/scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarQube scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./.sonar/scanner
+          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
 
       - name: Restore Dependencies
         run: dotnet restore
 
-      - name: Test
-        run: dotnet test --no-build --verbosity normal
+      - name: Begin SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          CF_BYPASS_TOKEN: ${{ secrets.CF_BYPASS_TOKEN }}
+        run: |
+          ./.sonar/scanner/dotnet-sonarscanner begin \
+            /k:"${SONAR_PROJECT_KEY}" \
+            /d:sonar.host.url="${SONAR_HOST_URL}" \
+            /d:sonar.token="${SONAR_TOKEN}" \
+            /d:sonar.qualitygate.wait=true \
+            /d:sonar.scanner.httpExtraHeaders="X-CF-Bypass-Token: ${CF_BYPASS_TOKEN}"
 
       - name: Build (Release)
-        run: dotnet publish --no-restore --configuration Release
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: Publish (Release)
+        run: dotnet publish --no-build --configuration Release
+
+      - name: End SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          CF_BYPASS_TOKEN: ${{ secrets.CF_BYPASS_TOKEN }}
+        run: |
+          ./.sonar/scanner/dotnet-sonarscanner end \
+            /d:sonar.token="${SONAR_TOKEN}" \
+            /d:sonar.scanner.httpExtraHeaders="X-CF-Bypass-Token: ${CF_BYPASS_TOKEN}"
 
       - name: Publish Release Build Artifact
         uses: actions/upload-artifact@v4
@@ -50,10 +107,10 @@ jobs:
       SERVICE_FILE_NAME: 'domain-status-report.service'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Get Release Build Artifact
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: 'Release Build Artifact'
           path: ./bin/Release
