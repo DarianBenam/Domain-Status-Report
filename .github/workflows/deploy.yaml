@@ -59,11 +59,24 @@ jobs:
       - name: Restore Dependencies
         run: dotnet restore
 
+      - name: Test SonarQube connectivity
+        env:
+          CF_BYPASS_TOKEN: ${{ secrets.CF_BYPASS_TOKEN }}
+        run: |
+          curl -fsS -w "\nHTTP %{http_code}\n" \
+            -H "X-CF-Bypass-Token: ${CF_BYPASS_TOKEN}" \
+            "${SONAR_HOST_URL}/api/system/status"
+
       - name: Begin SonarQube analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           CF_BYPASS_TOKEN: ${{ secrets.CF_BYPASS_TOKEN }}
         run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN secret is missing or empty. Add it under Repo Settings → Secrets and variables → Actions (repository secret, not Production environment-only)."
+            exit 1
+          fi
+
           ./.sonar/scanner/dotnet-sonarscanner begin \
             /k:"${SONAR_PROJECT_KEY}" \
             /d:sonar.host.url="${SONAR_HOST_URL}" \
