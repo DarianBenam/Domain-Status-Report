@@ -82,7 +82,7 @@ jobs:
             /d:sonar.host.url="${SONAR_HOST_URL}" \
             /d:sonar.token="${SONAR_TOKEN}" \
             /d:sonar.qualitygate.wait=true \
-            /d:sonar.scanner.httpExtraHeaders="X-CF-Bypass-Token: ${CF_BYPASS_TOKEN}"
+            /d:sonar.scanner.http.extraHeader="X-CF-Bypass-Token: ${CF_BYPASS_TOKEN}"
 
       - name: Build (Release)
         run: dotnet build --no-restore --configuration Release
@@ -100,7 +100,7 @@ jobs:
         run: |
           ./.sonar/scanner/dotnet-sonarscanner end \
             /d:sonar.token="${SONAR_TOKEN}" \
-            /d:sonar.scanner.httpExtraHeaders="X-CF-Bypass-Token: ${CF_BYPASS_TOKEN}"
+            /d:sonar.scanner.http.extraHeader="X-CF-Bypass-Token: ${CF_BYPASS_TOKEN}"
 
       - name: Publish Release Build Artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
