@@ -1,13 +1,14 @@
-name: Deploy to DigitalOcean
+name: CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+  pull_request:
 
 env:
   SONAR_UPSTREAM_URL: https://sonarqube.benam.io
   SONAR_PROXY_HOST_URL: http://127.0.0.1:9001
   SONAR_PROJECT_KEY: Domain-Status-Report
+  IS_MAIN_BRANCH_PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
 jobs:
   build:
@@ -19,11 +20,13 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
+        if: env.IS_MAIN_BRANCH_PUSH == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Start SonarQube Cloudflare Bypass Proxy
+        if: env.IS_MAIN_BRANCH_PUSH == 'true'
         env:
           CF_BYPASS_TOKEN: ${{ secrets.CF_BYPASS_TOKEN }}
         run: |
@@ -40,11 +43,13 @@ jobs:
           exit 1
 
       - name: Test SonarQube connectivity
+        if: env.IS_MAIN_BRANCH_PUSH == 'true'
         run: |
           curl -fsS -w "\nHTTP %{http_code}\n" \
             "${SONAR_PROXY_HOST_URL}/api/system/status"
 
       - name: Setup JDK 17
+        if: env.IS_MAIN_BRANCH_PUSH == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -56,6 +61,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Cache SonarQube packages
+        if: env.IS_MAIN_BRANCH_PUSH == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
@@ -63,6 +69,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Cache SonarQube scanner
+        if: env.IS_MAIN_BRANCH_PUSH == 'true'
         id: cache-sonar-scanner
         uses: actions/cache@v4
         with:
@@ -71,7 +78,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar-scanner
 
       - name: Install SonarQube scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        if: env.IS_MAIN_BRANCH_PUSH == 'true' && steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         run: |
           mkdir -p ./.sonar/scanner
           dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
@@ -80,6 +87,7 @@ jobs:
         run: dotnet restore
 
       - name: Begin SonarQube analysis
+        if: env.IS_MAIN_BRANCH_PUSH == 'true'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
@@ -100,6 +108,7 @@ jobs:
         run: dotnet publish --no-build --configuration Release
 
       - name: End SonarQube analysis
+        if: env.IS_MAIN_BRANCH_PUSH == 'true'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
@@ -107,6 +116,7 @@ jobs:
             /d:sonar.token="${SONAR_TOKEN}"
 
       - name: Publish Release Build Artifact
+        if: env.IS_MAIN_BRANCH_PUSH == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: 'Release Build Artifact'
@@ -116,6 +126,7 @@ jobs:
     runs-on: ubuntu-latest
 
     needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     environment:
       name: 'Production'
